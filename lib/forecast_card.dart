@@ -3,7 +3,16 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class ForecastCard extends StatelessWidget {
-  const ForecastCard({Key? key}) : super(key: key);
+  const ForecastCard(
+      {Key? key,
+      required this.time,
+      required this.temperature,
+      required this.icon})
+      : super(key: key);
+
+  final String time;
+  final String temperature;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -23,32 +32,32 @@ class ForecastCard extends StatelessWidget {
                 sigmaX: 7,
                 sigmaY: 7,
               ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      "16:00",
-                      style: TextStyle(
+                      time,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 3,
                     ),
                     Icon(
-                      Icons.cloud,
+                      icon,
                       size: 35,
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 5,
                     ),
                     Text(
-                      "28.4° C",
-                      style: TextStyle(
+                      temperature,
+                      style: const TextStyle(
                         fontSize: 15,
                       ),
                     ),

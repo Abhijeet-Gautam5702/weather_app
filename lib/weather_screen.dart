@@ -1,11 +1,48 @@
 import 'dart:ui';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:weather_app/additional_info_card.dart';
 import 'package:weather_app/forecast_card.dart';
+import 'package:weather_app/helpers.dart';
+import 'package:weather_app/secrets.dart';
 import 'package:weather_app/subheading.dart';
+import 'package:http/http.dart' as http;
 
-class WeatherScreen extends StatelessWidget {
+class WeatherScreen extends StatefulWidget {
   const WeatherScreen({Key? key}) : super(key: key);
+
+  @override
+  State<WeatherScreen> createState() => _WeatherScreenState();
+}
+
+class _WeatherScreenState extends State<WeatherScreen> {
+  bool isLoading = false;
+  // Do not use late keyword (late variables must be initialized before the build function is executed)
+  double temp = 0;
+
+  @override
+  void initState() {
+    getWeatherData();
+    super.initState();
+  }
+
+  Future getWeatherData() async {
+    try {
+      const cityName = "delhi";
+      var url = Uri.parse(
+          "https://api.openweathermap.org/data/2.5/forecast?q=$cityName&APPID=$openWeatherAPI");
+      // print(url);
+      var response = await http.get(url);
+      if (response.statusCode != 200) {
+        throw "An Unexpected Error Occured";
+      }
+      var jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } catch (err) {
+      throw err.toString();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +58,17 @@ class WeatherScreen extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () async {
+              // getWeatherData();
+              var res = await getWeatherData();
+              // res = res["list"][0]["main"]["temp"].toStringAsFixed(2);
+              setState(() {
+                isLoading = true;
+                var t = res["list"][0]["main"]["temp"].toString();
+                temp = double.parse(t) - 273.15;
+                temp = roundDouble(temp, 2);
+              });
+            },
             icon: const Icon(
               Icons.refresh,
             ),
@@ -69,30 +116,30 @@ class WeatherScreen extends StatelessWidget {
                         sigmaY: 12,
                         sigmaX: 12,
                       ),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              "27° C",
-                              style: TextStyle(
+                              "$temp° C",
+                              style: const TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 7,
                             ),
-                            Icon(
+                            const Icon(
                               Icons.cloud,
                               size: 50,
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
-                            Text(
+                            const Text(
                               "Rain",
                               style: TextStyle(
                                 fontSize: 18,
@@ -108,6 +155,7 @@ class WeatherScreen extends StatelessWidget {
             const SizedBox(
               height: 20,
             ),
+
             // Weather Forecast
             const Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -120,12 +168,37 @@ class WeatherScreen extends StatelessWidget {
                 ),
                 // Scrollable Row containing Cards showing the weather forecast
                 SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Small cards showing Forecast
-                      ForecastCard(),
+                      ForecastCard(
+                        time: "22:00",
+                        temperature: "13° C",
+                        icon: Icons.cloud,
+                      ),
+                      ForecastCard(
+                        time: "22:00",
+                        temperature: "13° C",
+                        icon: Icons.cloud,
+                      ),
+                      ForecastCard(
+                        time: "22:00",
+                        temperature: "13° C",
+                        icon: Icons.cloud,
+                      ),
+                      ForecastCard(
+                        time: "22:00",
+                        temperature: "13° C",
+                        icon: Icons.cloud,
+                      ),
+                      ForecastCard(
+                        time: "22:00",
+                        temperature: "13° C",
+                        icon: Icons.cloud,
+                      ),
                     ],
                   ),
                 )
@@ -134,6 +207,7 @@ class WeatherScreen extends StatelessWidget {
             const SizedBox(
               height: 20,
             ),
+
             // Additional Information
             const Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -146,13 +220,24 @@ class WeatherScreen extends StatelessWidget {
                 ),
                 // Row containing Cards showing the Additional Info
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Small cards showing addtional information
-                    Placeholder(
-                      fallbackHeight: 95,
-                      fallbackWidth: 95,
+                    AdditionalInfoCard(
+                      infoValue: "94",
+                      title: "Humidity",
+                      icon: Icons.water_drop_rounded,
+                    ),
+                    AdditionalInfoCard(
+                      infoValue: "7.67",
+                      title: "Wind Speed",
+                      icon: Icons.air,
+                    ),
+                    AdditionalInfoCard(
+                      infoValue: "1006",
+                      title: "Pressure",
+                      icon: Icons.beach_access,
                     ),
                   ],
                 )
