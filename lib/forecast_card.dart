@@ -40,6 +40,8 @@ class ForecastCard extends StatelessWidget {
                   children: [
                     Text(
                       time,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -56,7 +58,7 @@ class ForecastCard extends StatelessWidget {
                       height: 5,
                     ),
                     Text(
-                      temperature,
+                      "$temperature K",
                       style: const TextStyle(
                         fontSize: 15,
                       ),

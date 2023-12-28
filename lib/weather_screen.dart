@@ -8,6 +8,7 @@ import 'package:weather_app/helpers.dart';
 import 'package:weather_app/secrets.dart';
 import 'package:weather_app/subheading.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class WeatherScreen extends StatefulWidget {
   const WeatherScreen({Key? key}) : super(key: key);
@@ -17,30 +18,25 @@ class WeatherScreen extends StatefulWidget {
 }
 
 class _WeatherScreenState extends State<WeatherScreen> {
-  bool isLoading = false;
-  // Do not use late keyword (late variables must be initialized before the build function is executed)
-  double temp = 0;
-
   @override
   void initState() {
-    getWeatherData();
     super.initState();
   }
 
-  Future getWeatherData() async {
+  Future<Map<String, dynamic>> getWeatherData() async {
     try {
       const cityName = "delhi";
       var url = Uri.parse(
           "https://api.openweathermap.org/data/2.5/forecast?q=$cityName&APPID=$openWeatherAPI");
       // print(url);
       var response = await http.get(url);
-      if (response.statusCode != 200) {
+      var jsonResponse = jsonDecode(response.body);
+      if (jsonResponse["cod"] != "200") {
         throw "An Unexpected Error Occured";
       }
-      var jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } catch (err) {
-      throw err.toString();
+    } catch (e) {
+      throw e.toString();
     }
   }
 
@@ -58,194 +54,202 @@ class _WeatherScreenState extends State<WeatherScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () async {
-              // getWeatherData();
-              var res = await getWeatherData();
-              // res = res["list"][0]["main"]["temp"].toStringAsFixed(2);
-              setState(() {
-                isLoading = true;
-                var t = res["list"][0]["main"]["temp"].toString();
-                temp = double.parse(t) - 273.15;
-                temp = roundDouble(temp, 2);
-              });
-            },
+            onPressed: () {},
             icon: const Icon(
               Icons.refresh,
             ),
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 10.0,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(
-              height: 10,
-            ),
-            const Center(
-              child: Text(
-                "Get the weather of Delhi NCR",
-                style: TextStyle(
-                  fontSize: 18,
-                  // fontWeight: FontWeight.bold,
+      body: FutureBuilder(
+          future: getWeatherData(),
+          builder: (context, snapshot) {
+            // print(snapshot);
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
                 ),
-              ),
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            // Weather Display Card
-            SizedBox(
-              width: double.infinity,
-              child: Card(
-                  elevation: 15,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  color: Colors.blueGrey[800],
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(
-                      16,
-                    ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaY: 12,
-                        sigmaX: 12,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              "$temp° C",
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 7,
-                            ),
-                            const Icon(
-                              Icons.cloud,
-                              size: 50,
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            const Text(
-                              "Rain",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
+              );
+            }
 
-            // Weather Forecast
-            const Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Subheading
-                Subheading(title: "Weather Forecast"),
-                SizedBox(
-                  height: 10,
-                ),
-                // Scrollable Row containing Cards showing the weather forecast
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
+            if (snapshot.hasError) {
+              return Text(snapshot.error.toString());
+            }
+
+            final data = snapshot
+                .data!; // enforce that the data can never be null (since we have handled the errors above)
+            final currWeatherData = data['list'][0];
+            final currTemp = currWeatherData['main']['temp'];
+            final currSky = currWeatherData['weather'][0]['main'];
+            final pressure = currWeatherData['main']['pressure'];
+            final humidity = currWeatherData['main']['humidity'];
+            final windSpeed = currWeatherData['wind']['speed'];
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10.0,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const Center(
+                    child: Text(
+                      "Get the weather of Delhi NCR",
+                      style: TextStyle(
+                        fontSize: 18,
+                        // fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  // Weather Display Card
+                  SizedBox(
+                    width: double.infinity,
+                    child: Card(
+                        elevation: 15,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        color: Colors.blueGrey[800],
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            16,
+                          ),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(
+                              sigmaY: 12,
+                              sigmaX: 12,
+                            ),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "$currTemp K",
+                                    style: const TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 7,
+                                  ),
+                                  Icon(
+                                    (currSky == "Rain")
+                                        ? Icons.cloudy_snowing
+                                        : Icons.sunny,
+                                    size: 50,
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    currSky,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+
+                  // Weather Forecast
+                  Column(
                     mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Small cards showing Forecast
-                      ForecastCard(
-                        time: "22:00",
-                        temperature: "13° C",
-                        icon: Icons.cloud,
+                      // Subheading
+                      const Subheading(title: "Hourly Weather Forecast"),
+                      const SizedBox(
+                        height: 10,
                       ),
-                      ForecastCard(
-                        time: "22:00",
-                        temperature: "13° C",
-                        icon: Icons.cloud,
-                      ),
-                      ForecastCard(
-                        time: "22:00",
-                        temperature: "13° C",
-                        icon: Icons.cloud,
-                      ),
-                      ForecastCard(
-                        time: "22:00",
-                        temperature: "13° C",
-                        icon: Icons.cloud,
-                      ),
-                      ForecastCard(
-                        time: "22:00",
-                        temperature: "13° C",
-                        icon: Icons.cloud,
-                      ),
+
+                      SizedBox(
+                        height: 130,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: 5,
+                          itemBuilder: (context, index) {
+                            final forecast = data['list'][index + 1];
+                            final sky =
+                                data['list'][index + 1]['weather'][0]['main'];
+
+                            final hourlyTemp =
+                                forecast['main']['temp'].toString();
+
+                            final time =
+                                DateTime.parse(forecast['dt_txt'].toString());
+                            return ForecastCard(
+                                time: DateFormat.j().format(time),
+                                temperature: hourlyTemp,
+                                icon: (sky == "Rain")
+                                    ? Icons.cloudy_snowing
+                                    : Icons.sunny);
+                          },
+                        ),
+                      )
                     ],
                   ),
-                )
-              ],
-            ),
-            const SizedBox(
-              height: 20,
-            ),
+                  const SizedBox(
+                    height: 20,
+                  ),
 
-            // Additional Information
-            const Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Subheading
-                Subheading(title: "Additional Information"),
-                SizedBox(
-                  height: 10,
-                ),
-                // Row containing Cards showing the Additional Info
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Small cards showing addtional information
-                    AdditionalInfoCard(
-                      infoValue: "94",
-                      title: "Humidity",
-                      icon: Icons.water_drop_rounded,
-                    ),
-                    AdditionalInfoCard(
-                      infoValue: "7.67",
-                      title: "Wind Speed",
-                      icon: Icons.air,
-                    ),
-                    AdditionalInfoCard(
-                      infoValue: "1006",
-                      title: "Pressure",
-                      icon: Icons.beach_access,
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ],
-        ),
-      ),
+                  // Additional Information
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Subheading
+                      const Subheading(title: "Additional Information"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      // Row containing Cards showing the Additional Info
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Small cards showing addtional information
+                          AdditionalInfoCard(
+                            infoValue: humidity.toString(),
+                            title: "Humidity",
+                            icon: Icons.water_drop_rounded,
+                          ),
+                          AdditionalInfoCard(
+                            infoValue: windSpeed.toString(),
+                            title: "Wind Speed",
+                            icon: Icons.air,
+                          ),
+                          AdditionalInfoCard(
+                            infoValue: pressure.toString(),
+                            title: "Pressure",
+                            icon: Icons.beach_access,
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }),
     );
   }
 }
