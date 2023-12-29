@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:weather_app/additional_info_card.dart';
 import 'package:weather_app/forecast_card.dart';
-import 'package:weather_app/helpers.dart';
 import 'package:weather_app/secrets.dart';
 import 'package:weather_app/subheading.dart';
 import 'package:http/http.dart' as http;
