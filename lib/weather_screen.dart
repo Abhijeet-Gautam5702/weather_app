@@ -54,7 +54,9 @@ class _WeatherScreenState extends State<WeatherScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              setState(() {});
+            },
             icon: const Icon(
               Icons.refresh,
             ),
@@ -68,7 +70,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
                 child: CircularProgressIndicator(
-                  color: Colors.white,
+                  color: Colors.blue,
                 ),
               );
             }
@@ -117,7 +119,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        color: Colors.blueGrey[800],
+                        // color: Colors.blueGrey[800],
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(
                             16,
@@ -180,7 +182,6 @@ class _WeatherScreenState extends State<WeatherScreen> {
                       const SizedBox(
                         height: 10,
                       ),
-
                       SizedBox(
                         height: 130,
                         child: ListView.builder(

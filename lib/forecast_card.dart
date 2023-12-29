@@ -17,14 +17,14 @@ class ForecastCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 130,
-      height: 130,
+      width: 120,
+      height: 120,
       child: Card(
-          elevation: 15,
+          elevation: 5,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          color: Colors.blueGrey[800],
+          // color: Colors.blueGrey[800],
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: BackdropFilter(
